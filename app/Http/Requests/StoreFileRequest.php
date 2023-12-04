@@ -22,7 +22,10 @@ class StoreFileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => ['required', 'string', 'max:255'],
+            'status' => ['required', 'numeric'],
+            'file' => 'required|file',
+            'group_id' => 'required|exists:groups,id',
         ];
     }
 }

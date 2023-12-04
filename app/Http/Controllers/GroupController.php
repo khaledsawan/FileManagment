@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Group;
+use App\Models\User;
 use App\Http\Requests\StoreGroupRequest;
 use App\Http\Requests\UpdateGroupRequest;
+use Illuminate\Support\Facades\Auth;
 
 class GroupController extends Controller
 {
@@ -13,7 +15,10 @@ class GroupController extends Controller
      */
     public function index()
     {
-        //
+        $user=Auth::user();
+        $groups= $user->groups;
+
+        return view('groups.index', compact('groups'));
     }
 
     /**
@@ -21,7 +26,7 @@ class GroupController extends Controller
      */
     public function create()
     {
-        //
+        return view('groups.create');
     }
 
     /**
@@ -29,7 +34,14 @@ class GroupController extends Controller
      */
     public function store(StoreGroupRequest $request)
     {
-        //
+        // Validate the incoming request using StoreGroupRequest
+
+        $group = new Group();
+        $user=Auth::user();
+        $group->fill($request->validated());
+        $group->save();
+        $user->groups->attach($group);
+        return redirect()->route('groups.index')->with('success', 'Group created successfully');
     }
 
     /**
@@ -37,7 +49,7 @@ class GroupController extends Controller
      */
     public function show(Group $group)
     {
-        //
+        return view('groups.show', compact('group'));
     }
 
     /**
@@ -45,7 +57,7 @@ class GroupController extends Controller
      */
     public function edit(Group $group)
     {
-        //
+        return view('groups.edit', compact('group'));
     }
 
     /**
@@ -53,7 +65,10 @@ class GroupController extends Controller
      */
     public function update(UpdateGroupRequest $request, Group $group)
     {
-        //
+
+        $group->update($request->validated());
+
+        return redirect()->route('groups.index')->with('success', 'Group updated successfully');
     }
 
     /**
@@ -61,6 +76,8 @@ class GroupController extends Controller
      */
     public function destroy(Group $group)
     {
-        //
+        $group->delete();
+
+        return redirect()->route('groups.index')->with('success', 'Group deleted successfully');
     }
 }

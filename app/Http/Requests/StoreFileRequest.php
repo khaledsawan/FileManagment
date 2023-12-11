@@ -11,7 +11,7 @@ class StoreFileRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,9 +23,8 @@ class StoreFileRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'status' => ['required', 'numeric'],
             'file' => 'required|file',
-            'group_id' => 'required|exists:groups,id',
+
         ];
     }
 }

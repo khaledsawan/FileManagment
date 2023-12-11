@@ -40,7 +40,7 @@ class GroupController extends Controller
         $user=Auth::user();
         $group->fill($request->validated());
         $group->save();
-        $user->groups->attach($group);
+        $user->groups()->attach($group);
         return redirect()->route('groups.index')->with('success', 'Group created successfully');
     }
 

@@ -30,7 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     //grops
-    Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
+    Route::get('/', [GroupController::class, 'index'])->name('groups.index');
 
     Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
 

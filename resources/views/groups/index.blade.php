@@ -35,6 +35,12 @@
                                                 @method('DELETE')
                                                 <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded" onclick="return confirm('Are you sure?')">Delete</button>
                                             </form>
+                                            <form action="{{ route('groups.addUser', $group) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                @method('POST')
+                                                <input type="email" name="email" id="email" class="mt-1 p-2 border border-gray-300 dark:border-gray-700 rounded-md ">
+                                                <button type="submit" class="bg-green-500 hover:bg-green-700 text-black font-bold py-1 px-2 rounded" onclick="return confirm('Are you sure?')">Add User</button>
+                                            </form>
                                         </td>
                                     </tr>
                                 @empty

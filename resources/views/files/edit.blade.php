@@ -11,18 +11,29 @@
             </div>
         @endif
 
-        <form action="{{ route('groups.update', $group) }}" method="POST">
-            @csrf
+        <form action="{{ route('files.update', ['file' => $id ]) }}" method="POST" enctype="multipart/form-data">
             @method('PUT')
+            @csrf
+
+            @php
+                $groupId = session('group_id');
+            @endphp
+
+            <input type="hidden" name="group_id" value="{{ $groupId }}">
 
             <div class="mb-4">
-                <label for="name" class="block text-sm font-medium text-gray-600 dark:text-gray-400">Group Name</label>
-                <input type="text" class="mt-1 p-2 border border-gray-300 dark:border-gray-700 rounded-md w-full" id="name" name="name" value="{{ old('name', $group->name) }}">
+                <label for="name" class="block text-sm font-medium text-gray-600 dark:text-gray-400">File Name</label>
+                <input type="text" class="mt-1 p-2 border border-gray-300 dark:border-gray-700 rounded-md w-full" id="name" name="name" value="{{ old('name') }}">
+            </div>
+
+            <div class="mb-4">
+                <label for="file" class="block text-sm font-medium text-gray-600 dark:text-gray-400">File</label>
+                <input type="file" class="mt-1 p-2 border border-gray-300 dark:border-gray-700 rounded-md w-full" id="file" name="file">
             </div>
 
             <!-- Add more form fields as needed -->
 
-            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Update Group</button>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Update File</button>
         </form>
     </div>
 </x-app-layout>

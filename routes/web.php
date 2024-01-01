@@ -30,7 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     //grops
-    Route::get('/', [GroupController::class, 'index'])->name('groups.index');
+    Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
 
     Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
 
@@ -43,6 +43,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/groups/{group}', [GroupController::class, 'update'])->name('groups.update');
 
     Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
+    Route::post('/groups/{group}', [GroupController::class, 'addUser'])->name('groups.addUser');
 
     //filse
     Route::get('/files/index', [FileController::class, 'index'])->name('files.index');
@@ -58,6 +59,11 @@ Route::middleware('auth')->group(function () {
     Route::put('/files/{file}', [FileController::class, 'update'])->name('files.update');
 
     Route::delete('/files/{file}', [FileController::class, 'destroy'])->name('files.destroy');
+
+    Route::post('/files/bulk-update', [FileController::class, 'bulkUpdate'])->name('files.bulkUpdate');
+
+    Route::post('/files/finish', [FileController::class, 'finishFile'])->name('files.finish');
+
 });
 
 require __DIR__ . '/auth.php';

@@ -18,7 +18,10 @@ class FileController extends Controller
     {
         $groupId = $request->query('group_id');
         session(['group_id' => $groupId]);
+        $userId = Auth::user()->id;
+        session(['userId' => $userId]);
         $files = File::where('group_id', $groupId)->get();
+
 
         return view('files.index', compact('files'));
     }
@@ -80,27 +83,48 @@ class FileController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(File $file)
+    public function edit($id)
     {
-        return view('files.edit', compact('file'));
+        return view('files.edit', ['id' => $id]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateFileRequest $request, File $file)
+    public function update(Request $request, File $file)
     {
         // Retrieve the group_id from the session
         $groupId = session('group_id');
+        // Retrieve the user ID from the session
+        $userId = session('userId');
 
-        // Update the file
-        $file->update($request->validated());
+        // Check if the file's status is equal to the user's ID
+        if ($file->status != $userId) {
+            // If not, return a response indicating that the user doesn't have permission
+            return redirect()->route('files.index')->with('error', 'You do not have permission to update this file.');
+        }
+
+        // Handle file upload if present
+        if ($request->hasFile('file')) {
+            $uploadedFile = $request->file('file');
+            $destinationPath = public_path('uploads');
+            $fileName = time() . '.' . $uploadedFile->getClientOriginalExtension();
+            $uploadedFile->move($destinationPath, $fileName);
+            $file->path = $destinationPath . '/' . $fileName;
+        }
+
+        // Update the file attributes from the validated request data
+        $file->fill($request->all());
+
+        // Save the updated file
+        $file->save();
 
         // Store the group_id in the session again
         session(['group_id' => $groupId]);
 
-        // Redirect back to the index page with a success message
-        return redirect()->route('files.index')->with('success', 'File updated successfully');
+        $files = File::where('group_id', $groupId)->get();
+
+        return view('files.index', ['group_id' => $groupId, 'files' => $files])->with('success', 'Selected files updated successfully.');
     }
 
     /**
@@ -111,5 +135,38 @@ class FileController extends Controller
         $file->delete();
 
         return redirect()->route('files.index')->with('success', 'File deleted successfully');
+    }
+    public function bulkUpdate(Request $request)
+    {
+        $selectedFiles = $request->input('selected_files', []);
+
+        foreach ($selectedFiles as $fileId) {
+            // Ensure the file exists and has status 0 before updating
+            $file = File::find($fileId);
+
+            if ($file && $file->status == 0) {
+                $file->update(['status' =>  Auth::user()->id]);
+            }
+        }
+
+        $groupId = session('group_id');
+        $files = File::where('group_id', $groupId)->get();
+
+        return view('files.index', ['group_id' => $groupId, 'files' => $files])->with('success', 'Selected files updated successfully.');
+    }
+
+    public function finishFile(Request $request)
+    {
+        $fileId = $request->input('file_id');
+        $file = File::find($fileId);
+
+        if ($file) {
+            $file->update(['status' => 0]);
+        }
+
+        $groupId = session('group_id');
+        $files = File::where('group_id', $groupId)->get();
+
+        return response()->json(['message' => 'File finished successfully', 'files' => $files, 'redirect' => route('files.index', ['group_id' => $groupId])]);
     }
 }

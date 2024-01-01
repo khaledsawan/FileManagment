@@ -6,7 +6,9 @@ use App\Models\Group;
 use App\Models\User;
 use App\Http\Requests\StoreGroupRequest;
 use App\Http\Requests\UpdateGroupRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request as FacadesRequest;
 
 class GroupController extends Controller
 {
@@ -17,6 +19,7 @@ class GroupController extends Controller
     {
         $user=Auth::user();
         $groups= $user->groups;
+
 
         return view('groups.index', compact('groups'));
     }
@@ -78,6 +81,18 @@ class GroupController extends Controller
     {
         $group->delete();
 
+        return redirect()->route('groups.index')->with('success', 'Group deleted successfully');
+    }
+
+    public function addUser(Group $group, Request $request)
+    {
+        $email=$request->email;
+        $user= User::where('email',$email)->first();
+        //$group->user=$user;
+        if($user!=null)
+        $user->groups()->attach($group);
+// print($email);
+// print($user);
         return redirect()->route('groups.index')->with('success', 'Group deleted successfully');
     }
 }

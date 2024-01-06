@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\File;
 use App\Models\Group;
 use App\Http\Requests\StoreFileRequest;
-use App\Http\Requests\UpdateFileRequest;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -93,10 +93,18 @@ class FileController extends Controller
      */
     public function update(Request $request, File $file)
     {
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|max:5120',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
         // Retrieve the group_id from the session
         $groupId = session('group_id');
         // Retrieve the user ID from the session
         $userId = session('userId');
+
 
         // Check if the file's status is equal to the user's ID
         if ($file->status != $userId) {

@@ -149,12 +149,17 @@ class FileController extends Controller
         $selectedFiles = $request->input('selected_files', []);
 
         foreach ($selectedFiles as $fileId) {
-            // Ensure the file exists and has status 0 before updating
             $file = File::find($fileId);
+            if ($file && $file->status != 0) {
+                $groupId = session('group_id');
+                $files = File::where('group_id', $groupId)->get();
 
-            if ($file && $file->status == 0) {
-                $file->update(['status' =>  Auth::user()->id]);
+                return view('files.index', ['group_id' => $groupId, 'files' => $files])->with('success', 'Selected files updated successfully.');
             }
+        }
+        foreach ($selectedFiles as $fileId) {
+            $file = File::find($fileId);
+            $file->update(['status' =>  Auth::user()->id]);
         }
 
         $groupId = session('group_id');

@@ -24,6 +24,13 @@ class GroupController extends Controller
         return view('groups.index', compact('groups'));
     }
 
+    public function config(Group $group)
+    {
+        return view('groups.config', compact('group'));
+    }
+
+
+
     /**
      * Show the form for creating a new resource.
      */
@@ -42,6 +49,8 @@ class GroupController extends Controller
         $group = new Group();
         $user=Auth::user();
         $group->fill($request->validated());
+
+        $group->user_id_creater=$user->id;
         $group->save();
         $user->groups()->attach($group);
         return redirect()->route('groups.index')->with('success', 'Group created successfully');
@@ -88,11 +97,8 @@ class GroupController extends Controller
     {
         $email=$request->email;
         $user= User::where('email',$email)->first();
-        //$group->user=$user;
         if($user!=null)
         $user->groups()->attach($group);
-// print($email);
-// print($user);
         return redirect()->route('groups.index')->with('success', 'Group deleted successfully');
     }
 }

@@ -12,6 +12,24 @@
                 $userId = session('userId');
 
             @endphp
+                 <!-- Display errors -->
+                 @if ($errors->any())
+                 <div class="alert alert-danger">
+                     <ul>
+                         @foreach ($errors->all() as $error)
+                             <li>{{ $error }}</li>
+                         @endforeach
+                     </ul>
+                 </div>
+             @endif
+
+             <!-- Display success message -->
+             @if (session('success'))
+                 <div class="alert alert-success">
+                     {{ session('success') }}
+                 </div>
+             @endif
+
             <a href="{{ route('files.create', ['group_id' => $groupId]) }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4">Create File</a>
 
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg p-6">

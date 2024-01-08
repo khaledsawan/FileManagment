@@ -30,6 +30,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     //grops
+    Route::get('/groups/{group}/config', [GroupController::class, 'config'])->name('groups.config');
+
     Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
 
     Route::get('/groups/create', [GroupController::class, 'create'])->name('groups.create');
@@ -43,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/groups/{group}', [GroupController::class, 'update'])->name('groups.update');
 
     Route::delete('/groups/{group}', [GroupController::class, 'destroy'])->name('groups.destroy');
+
     Route::post('/groups/{group}', [GroupController::class, 'addUser'])->name('groups.addUser');
 
     //filse

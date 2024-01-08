@@ -40,21 +40,29 @@ class FileController extends Controller
      */
     public function store(StoreFileRequest $request)
     {
-        // Retrieve the authenticated user's ID and the group ID from the request
         $userId = Auth::user()->id;
         $groupId = $request->input('group_id');
         session(['group_id' => $groupId]);
-        // Create a new File instance
+        $group = Group::find($groupId);
+        $filesCount =File::where('group_id', $groupId)->count();
+     //   dd($filesCount);
+      //  dd($group->files_count);
+        if ($group->files_count == $filesCount) {
+            return redirect()->back()->with('error', 'File limit reached');
+        }
+        if ($request->hasFile('file')){ $uploadedFileSizeBytes = $request->file('file')->getSize();
+            $uploadedFileSizeMB = $this->formatBytes($uploadedFileSizeBytes);
+
+            if ($group->filesize < $uploadedFileSizeMB) {
+                return redirect()->back()->with('error', 'File size is too big');
+            }}
+
+
         $file = new File();
-
-        // Fill the file attributes from the validated request data
         $file->fill($request->validated());
-
-        // Set the status, user ID, and group ID
         $file->status = $userId;
         $file->group_id = $groupId;
 
-        // Handle file upload if present
         if ($request->hasFile('file')) {
             $uploadedFile = $request->file('file');
             $destinationPath = public_path('uploads');
@@ -63,10 +71,9 @@ class FileController extends Controller
             $file->path = $destinationPath . '/' . $fileName;
         }
 
-        // Save the file
         $file->save();
         $files = File::where('group_id', $groupId)->get();
-        // Redirect to the index page with a success message
+
         return redirect()->route('files.index', compact('files'))->with('success', 'File created successfully');
     }
 
@@ -94,7 +101,7 @@ class FileController extends Controller
     public function update(Request $request, File $file)
     {
         $validator = Validator::make($request->all(), [
-            'file' => 'required|file|max:5120',
+            'file' => 'file',
         ]);
 
         if ($validator->fails()) {
@@ -102,6 +109,15 @@ class FileController extends Controller
         }
         // Retrieve the group_id from the session
         $groupId = session('group_id');
+        $group = Group::find($groupId);
+        $uploadedFileSizeBytes = $request->file('file')->getSize();
+
+        // Convert bytes to megabytes
+        $uploadedFileSizeMB = $this->formatBytes($uploadedFileSizeBytes);
+
+        if ($group->filesize < $uploadedFileSizeMB) {
+            return response()->json(['error' => 'file size is Big'], 400);
+        }
         // Retrieve the user ID from the session
         $userId = session('userId');
 
@@ -181,5 +197,11 @@ class FileController extends Controller
         $files = File::where('group_id', $groupId)->get();
 
         return response()->json(['message' => 'File finished successfully', 'files' => $files, 'redirect' => route('files.index', ['group_id' => $groupId])]);
+    }
+
+    protected function formatBytes($bytes, $precision = 2)
+    {
+        $mbSize = $bytes / 1024 / 1024;
+        return round($mbSize, $precision);
     }
 }

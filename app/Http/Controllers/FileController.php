@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\File;
 use App\Models\Group;
+use App\Models\Report;
 use App\Http\Requests\StoreFileRequest;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -44,18 +45,18 @@ class FileController extends Controller
         $groupId = $request->input('group_id');
         session(['group_id' => $groupId]);
         $group = Group::find($groupId);
-        $filesCount =File::where('group_id', $groupId)->count();
-     //   dd($filesCount);
-      //  dd($group->files_count);
-        if ($group->files_count == $filesCount) {
+        $filesCount = File::where('group_id', $groupId)->count();
+        if ($group->files_count < $filesCount) {
             return redirect()->back()->with('error', 'File limit reached');
         }
-        if ($request->hasFile('file')){ $uploadedFileSizeBytes = $request->file('file')->getSize();
+        if ($request->hasFile('file')) {
+            $uploadedFileSizeBytes = $request->file('file')->getSize();
             $uploadedFileSizeMB = $this->formatBytes($uploadedFileSizeBytes);
 
-            if ($group->filesize < $uploadedFileSizeMB) {
+            if ($group->file_size < $uploadedFileSizeMB) {
                 return redirect()->back()->with('error', 'File size is too big');
-            }}
+            }
+        }
 
 
         $file = new File();
@@ -66,14 +67,20 @@ class FileController extends Controller
         if ($request->hasFile('file')) {
             $uploadedFile = $request->file('file');
             $destinationPath = public_path('uploads');
-            $fileName = time() . '.' . $uploadedFile->getClientOriginalExtension();
+            $fileName = time() . '/' . $group->name . '/' . $uploadedFile->getClientOriginalExtension();
             $uploadedFile->move($destinationPath, $fileName);
             $file->path = $destinationPath . '/' . $fileName;
         }
 
         $file->save();
         $files = File::where('group_id', $groupId)->get();
-
+        session(['userId' => $userId]);
+        session(['group_id' => $groupId]);
+        $user=Auth::user();
+        $report = new Report();
+        $report->group_id=$groupId;
+        $report->message= $user->email.' create file record';
+        $report->save();
         return redirect()->route('files.index', compact('files'))->with('success', 'File created successfully');
     }
 
@@ -110,14 +117,17 @@ class FileController extends Controller
         // Retrieve the group_id from the session
         $groupId = session('group_id');
         $group = Group::find($groupId);
-        $uploadedFileSizeBytes = $request->file('file')->getSize();
+        if ($request->hasFile('file')) {
+            $uploadedFileSizeBytes = $request->file('file')->getSize();
 
-        // Convert bytes to megabytes
-        $uploadedFileSizeMB = $this->formatBytes($uploadedFileSizeBytes);
+            // Convert bytes to megabytes
+            $uploadedFileSizeMB = $this->formatBytes($uploadedFileSizeBytes);
 
-        if ($group->filesize < $uploadedFileSizeMB) {
-            return response()->json(['error' => 'file size is Big'], 400);
+            if ($group->file_size < $uploadedFileSizeMB) {
+                return redirect()->back()->with('error', 'File size is too big');
+            }
         }
+
         // Retrieve the user ID from the session
         $userId = session('userId');
 
@@ -147,19 +157,32 @@ class FileController extends Controller
         session(['group_id' => $groupId]);
 
         $files = File::where('group_id', $groupId)->get();
-
+        $user=Auth::user();
+        $report = new Report();
+        $report->group_id=$groupId;
+        $report->message= $user->email.' update file record';
+        $report->save();
         return view('files.index', ['group_id' => $groupId, 'files' => $files])->with('success', 'Selected files updated successfully.');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(File $file)
+    public function destroy(Request $request)
     {
+        $fileId = $request->input('file_id');
+        $file = File::find($fileId);
         $file->delete();
-
-        return redirect()->route('files.index')->with('success', 'File deleted successfully');
+        $groupId = session('group_id');
+        $files = File::where('group_id', $groupId)->get();
+        $user=Auth::user();
+        $report = new Report();
+        $report->group_id=$groupId;
+        $report->message= $user->email.' delete file record';
+        $report->save();
+        return response()->json(['message' => 'File deleted successfully', 'files' => $files, 'redirect' => route('files.index', ['group_id' => $groupId])]);
     }
+
     public function bulkUpdate(Request $request)
     {
         $selectedFiles = $request->input('selected_files', []);
@@ -180,7 +203,11 @@ class FileController extends Controller
 
         $groupId = session('group_id');
         $files = File::where('group_id', $groupId)->get();
-
+        $user=Auth::user();
+        $report = new Report();
+        $report->group_id=$groupId;
+        $report->message= $user->email.' try to bulkUpdate files records';
+        $report->save();
         return view('files.index', ['group_id' => $groupId, 'files' => $files])->with('success', 'Selected files updated successfully.');
     }
 
@@ -195,13 +222,17 @@ class FileController extends Controller
 
         $groupId = session('group_id');
         $files = File::where('group_id', $groupId)->get();
-
+        $user=Auth::user();
+        $report = new Report();
+        $report->group_id=$groupId;
+        $report->message= $user->email.' finished file update';
+        $report->save();
         return response()->json(['message' => 'File finished successfully', 'files' => $files, 'redirect' => route('files.index', ['group_id' => $groupId])]);
     }
 
     protected function formatBytes($bytes, $precision = 2)
     {
-        $mbSize = $bytes / 1024 / 1024;
+        $mbSize = $bytes / 1048576;
         return round($mbSize, $precision);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Group;
+use App\Models\File;
 use App\Models\User;
 use App\Http\Requests\StoreGroupRequest;
 use App\Http\Requests\UpdateGroupRequest;
@@ -101,4 +102,5 @@ class GroupController extends Controller
         $user->groups()->attach($group);
         return redirect()->route('groups.index')->with('success', 'Group deleted successfully');
     }
+
 }

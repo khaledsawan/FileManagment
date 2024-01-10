@@ -10,7 +10,18 @@
                 <span class="block sm:inline">{{ $errors->first() }}</span>
             </div>
         @endif
+        @if (session('error'))
+        <div class="alert alert-error">
+            {{ session('error') }}
+        </div>
+    @endif
 
+    <!-- Display success message -->
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
         <form action="{{ route('files.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             @php

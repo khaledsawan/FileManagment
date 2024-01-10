@@ -15,6 +15,10 @@ class Group extends Model
     {
         return $this->hasMany(File::class);
     }
+    public function reports()
+    {
+        return $this->hasMany(Report::class);
+    }
     public function users()
     {
         return $this->belongsToMany(User::class);

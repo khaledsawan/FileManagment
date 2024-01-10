@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -66,6 +67,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/files/bulk-update', [FileController::class, 'bulkUpdate'])->name('files.bulkUpdate');
 
     Route::post('/files/finish', [FileController::class, 'finishFile'])->name('files.finish');
+
+    Route::post('/files/destroy', [FileController::class, 'destroy'])->name('files.destroy');
+
+    //reprot
+
+    Route::get('/groups/{group}/report', [ReportController::class, 'index'])->name('report.index');
+    Route::get('/groups/{group}/reports/pdf', [ReportController::class, 'downloadPdf'])->name('reports.pdf');
 
 });
 
